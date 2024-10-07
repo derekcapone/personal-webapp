@@ -1,30 +1,41 @@
 import React, { useState, useEffect } from 'react';
 
 const EbookConverter = () => {
-  const [projectData, setProjectData] = useState(null);
-  
-  useEffect(() => {
-    console.log('Fetching project data...');
-    fetch('http://localhost:5000/api/projects/ebookconverter')  // Adjust URL based on Flask endpoint
-      .then(response => response.json())
-      .then(data => {
-        setProjectData(data);
-      })
-      .catch(error => {
-        console.error('Error fetching project data:', error);
-      });
-  }, []);
+  const [file, setFile] = useState(null);
+  const [message, setMessage] = useState('');
 
+  // Handle file input change event
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  // Handle file upload when button is clicked
+  const handleFileUpload = () => {
+    if (!file) {
+      setMessage("No file selected");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('http://localhost:5000/api/projects/ebookconverter', {
+      method: 'POST',
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => setMessage(data.message))
+      .catch(error => setMessage('Error uploading file: ' + error));
+  };
+  
   return (
-    <div className='basic-text'>
-      <h2>eBook File Converter Tool</h2>
-      {projectData && (
-        <div>
-          <p>{projectData.message}</p>
-        </div>
-      )}
+    <div>
+      <input type="file" onChange={handleFileChange} />
+      <button onClick={handleFileUpload}>Upload File</button>
+      <p>{message}</p>
     </div>
   );
+  
 };
 
 export default EbookConverter;
